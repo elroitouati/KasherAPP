@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "בודק כשרות",
+    "slug": "kasher-check",
+    "scheme": "kashercheck",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0D12",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.elroitouati.kashercheck"
+    },
+    "android": {
+      "package": "com.elroitouati.kashercheck",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0D12",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["android.permission.CAMERA"],
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      ["expo-localization", { "forcesRTL": true }],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "המצלמה משמשת לקריאת רשימת הרכיבים על אריזות מזון.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": { "minSdkVersion": 26 },
+          "ios": { "deploymentTarget": "16.4" }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#0B0D12"
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": false }
+  }
+}
