@@ -1,9 +1,12 @@
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { analyzeLabel, summarize } from '../kashrut/engine';
 import type { CapturedPhoto } from '../scanner/types';
 import { color, radius, space } from '../theme/tokens';
 import { Button } from './Button';
+import { HighlightedText } from './HighlightedText';
+import { RiskBadge } from './RiskBadge';
 import { Txt } from './Txt';
 
 type Props = { photo: CapturedPhoto; onDone: () => void };
@@ -15,11 +18,35 @@ type Props = { photo: CapturedPhoto; onDone: () => void };
 export function CaptureReview({ photo, onDone }: Props) {
   const insets = useSafeAreaInsets();
   const empty = photo.text != null && photo.text.trim().length === 0;
+  const result = photo.text && !empty ? analyzeLabel(photo.text) : null;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + space[4], paddingBottom: insets.bottom + space[4] }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Txt variant="title">התווית צולמה</Txt>
+        {result && (
+          <View style={styles.card}>
+            <RiskBadge level={result.level} detail={summarize(result)} />
+            {result.findings.map((f, i) => (
+              <Txt key={i} variant="caption">
+                {f.reason} — <Txt latin variant="caption" style={{ color: color.text1 }}>{f.term}</Txt>
+              </Txt>
+            ))}
+            {result.traces.length > 0 && (
+              <Txt variant="caption" style={{ color: color.text3 }}>
+                עקבות (לא נספרים): {result.traces.map((t) => t.term).join(', ')}
+              </Txt>
+            )}
+            {result.notes.map((n) => (
+              <Txt key={n} variant="caption">
+                {n}
+              </Txt>
+            ))}
+            <Txt variant="caption" style={{ color: color.text3 }}>
+              נבדק במילון בלבד
+            </Txt>
+          </View>
+        )}
         <Image source={{ uri: photo.uri }} style={styles.photo} resizeMode="cover" accessibilityIgnoresInvertColors />
 
         <View style={styles.card}>
@@ -31,9 +58,7 @@ export function CaptureReview({ photo, onDone }: Props) {
           ) : empty ? (
             <Txt style={styles.muted}>לא נקרא טקסט. קרב את הטלפון לרשימת הרכיבים וצלם שוב.</Txt>
           ) : (
-            <Txt latin selectable style={styles.ocr}>
-              {photo.text}
-            </Txt>
+            <HighlightedText text={photo.text} findings={[...(result?.findings ?? []), ...(result?.traces ?? [])]} style={styles.ocr} />
           )}
         </View>
       </ScrollView>

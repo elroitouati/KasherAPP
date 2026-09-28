@@ -4,19 +4,12 @@
  * No React / native imports here — everything is unit-tested with vitest.
  */
 
-/** Headers that open an ingredient list, in the label languages we support. */
-const INGREDIENT_HEADER =
-  /(^|[^\p{L}])(ingredienti|ingredients?|zutaten|ingr[ée]dients|ingredientes|ingredi[ëe]nten|sk[łl]adniki|složení|zloženie|összetevők)(?![\p{L}])|רכיבים/iu;
+import { findIngredientsHeader } from '../kashrut/engine';
+
+export { findIngredientsHeader };
 
 export function normalizeOcr(text: string): string {
   return text.replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim();
-}
-
-/** Index where the ingredient list header starts, or -1. */
-export function findIngredientsHeader(text: string): number {
-  const m = INGREDIENT_HEADER.exec(text);
-  if (!m) return -1;
-  return m.index + (m[1]?.length ?? 0);
 }
 
 export function hasIngredientsHeader(text: string): boolean {

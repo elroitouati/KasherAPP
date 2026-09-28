@@ -26,11 +26,16 @@ npx expo lint
 
 ```
 src/app/               מסכים (expo-router)
+src/kashrut/           הסטנדרט: מילון, נרמול ומנוע סריקה
+  dict.ts              ~900 מונחים ב-6 שפות, מסייגים וביטויים בטוחים
+  engine.ts            scanIngredients / analyzeLabel — רמה, ממצאים, עקבות, בשר+חלב
+  normalize.ts         נרמול טקסט עם מיפוי חזרה למילה המקורית בתווית
 src/scanner/           מצלמה, OCR חי, זיהוי יציבות ורשימת רכיבים
   analysis.ts          לוגיקה טהורה: יציבות, הכוונה, בחירת הסיבוב הטוב ביותר
   LiveCamera.tsx       VisionCamera v5 + ML Kit (development build)
   ExpoGoCamera.tsx     expo-camera (Expo Go)
 src/components/        מסגרת סריקה, כפתור צילום עם טבעת התקדמות, טקסט RTL
 src/theme/tokens.ts    טוקנים של עיצוב — כל צבע, מידה ומשך מגיעים מכאן
-tests/                 vitest
+tests/                 vitest (כולל כל בדיקות החובה)
+docs/ingredients-reference.md   תיעוד המילון — נוצר אוטומטית: npm run docs:dict
 ```

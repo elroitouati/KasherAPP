@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CaptureButton } from '../components/CaptureButton';
 import { CaptureReview } from '../components/CaptureReview';
 import { IconButton } from '../components/IconButton';
+import { LiveVerdict } from '../components/LiveVerdict';
 import { TorchIcon } from '../components/icons';
 import { PermissionGate } from '../components/PermissionGate';
 import { ScanFrame, type FrameRect } from '../components/ScanFrame';
@@ -123,16 +124,10 @@ function Scanner() {
         </View>
       </View>
 
-      {/* Live OCR readout (step 1 debug view; becomes the risk badge in step 2). */}
+      {/* Live risk tag from the dictionary, updated on every OCR tick. */}
       {showLiveText && (
         <View style={[styles.livePanel, { top: rect.y + rect.height + space[3] }]} pointerEvents="none">
-          <View style={styles.liveHeader}>
-            <Txt variant="label">טקסט חי</Txt>
-            {scan.hasIngredients && <Txt variant="label" style={{ color: risk[0] }}>נמצאה רשימת רכיבים</Txt>}
-          </View>
-          <Txt latin numberOfLines={3} style={styles.liveText}>
-            {scan.text.replace(/\n/g, ' ')}
-          </Txt>
+          <LiveVerdict text={scan.text} />
         </View>
       )}
 
@@ -169,18 +164,6 @@ const styles = StyleSheet.create({
   },
   pillError: { borderColor: risk[4] },
   pillText: { fontFamily: font.bold, fontSize: size.body, lineHeight: 22, textAlign: 'center' },
-  livePanel: {
-    position: 'absolute',
-    start: space[6],
-    end: space[6],
-    backgroundColor: color.surfaceScrim,
-    borderColor: color.border,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    padding: space[3],
-    gap: space[1],
-  },
-  liveHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  liveText: { fontSize: size.xs, lineHeight: 18, color: color.text2 },
+  livePanel: { position: 'absolute', start: space[6], end: space[6] },
   bottomBar: { position: 'absolute', start: 0, end: 0, bottom: 0, alignItems: 'center' },
 });
