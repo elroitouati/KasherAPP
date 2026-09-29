@@ -10,7 +10,10 @@
     "backgroundColor": "#0B0D12",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.elroitouati.kashercheck"
+      "bundleIdentifier": "com.elroitouati.kashercheck",
+      "infoPlist": {
+        "ExpoLocalization_forcesRTL": true
+      }
     },
     "android": {
       "package": "com.elroitouati.kashercheck",
@@ -20,13 +23,20 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
       "expo-router",
       "expo-font",
-      ["expo-localization", { "forcesRTL": true }],
+      [
+        "expo-localization",
+        {
+          "forcesRTL": true
+        }
+      ],
       [
         "expo-camera",
         {
@@ -38,8 +48,12 @@
       [
         "expo-build-properties",
         {
-          "android": { "minSdkVersion": 26 },
-          "ios": { "deploymentTarget": "16.4" }
+          "android": {
+            "minSdkVersion": 26
+          },
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
         }
       ],
       [
@@ -51,6 +65,15 @@
         }
       ]
     ],
-    "experiments": { "typedRoutes": false }
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8b8f806d-10ea-4d11-806b-90fecc7acc3d"
+      }
+    },
+    "owner": "elroi_touati"
   }
 }
