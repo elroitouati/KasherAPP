@@ -9,13 +9,13 @@ import { HighlightedText } from './HighlightedText';
 import { RiskBadge } from './RiskBadge';
 import { Txt } from './Txt';
 
-type Props = { photo: CapturedPhoto; onDone: () => void };
+type Props = { photo: CapturedPhoto; onDone: () => void; onHome: () => void };
 
 /**
  * Step-1 stand-in for the result screen: shows the full-resolution photo and
  * the text ML Kit read from it. Replaced by the gauge screen in step 3.
  */
-export function CaptureReview({ photo, onDone }: Props) {
+export function CaptureReview({ photo, onDone, onHome }: Props) {
   const insets = useSafeAreaInsets();
   const empty = photo.text != null && photo.text.trim().length === 0;
   const result = photo.text && !empty ? analyzeLabel(photo.text) : null;
@@ -43,7 +43,7 @@ export function CaptureReview({ photo, onDone }: Props) {
               </Txt>
             ))}
             <Txt variant="caption" style={{ color: color.text3 }}>
-              נבדק במילון בלבד
+              נבדק במילון בלבד · בדיקה לפי מקור מן החי, לא תחליף להכשר
             </Txt>
           </View>
         )}
@@ -64,6 +64,7 @@ export function CaptureReview({ photo, onDone }: Props) {
       </ScrollView>
       <View style={styles.actions}>
         <Button label="סרוק מוצר הבא" onPress={onDone} />
+        <Button label="חזרה למסך הבית" kind="secondary" onPress={onHome} />
       </View>
     </View>
   );
@@ -83,5 +84,5 @@ const styles = StyleSheet.create({
   },
   muted: { color: color.text2 },
   ocr: { fontSize: 15, lineHeight: 22 },
-  actions: { paddingHorizontal: space[5], paddingTop: space[3] },
+  actions: { paddingHorizontal: space[5], paddingTop: space[3], gap: space[2] },
 });

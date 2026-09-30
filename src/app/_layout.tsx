@@ -24,7 +24,7 @@ export default function RootLayout() {
       {/* direction: 'rtl' makes the whole tree RTL even in Expo Go, which ignores forcesRTL. */}
       <View style={{ flex: 1, direction: 'rtl', backgroundColor: color.bg }}>
         <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }} />
+        <Stack screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: color.bg } }} />
       </View>
     </SafeAreaProvider>
   );

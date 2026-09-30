@@ -1,28 +1,35 @@
 /**
- * Design tokens — "instrument" direction.
- * The UI itself is neutral graphite; the only saturated colour on screen is the
- * risk scale. Every colour, size and duration in the app comes from here.
+ * Design tokens — taken from the logo: deep navy, white, scan-corner green.
+ * Navy is the ground, green is the one action colour; beyond that the only
+ * saturated colour on screen is the risk scale. Every colour, size and duration in the app comes from here.
  */
 export const color = {
-  bg: '#0B0D12',
-  surface1: 'rgba(255,255,255,0.04)',
-  surface2: 'rgba(255,255,255,0.07)',
-  surfaceScrim: 'rgba(11,13,18,0.72)',
-  border: 'rgba(255,255,255,0.10)',
-  borderStrong: 'rgba(255,255,255,0.16)',
-  text1: '#F4F6F8',
-  text2: 'rgba(244,246,248,0.68)',
-  text3: 'rgba(244,246,248,0.44)',
+  /** Deep navy from the bottom of the logo. */
+  bg: '#041A4E',
+  /** Lighter navy from the logo's top-left highlight — used for the hero glow only. */
+  bgGlow: '#0B4AA6',
+  surface1: 'rgba(255,255,255,0.06)',
+  surface2: 'rgba(255,255,255,0.10)',
+  surfaceScrim: 'rgba(4,26,78,0.78)',
+  border: 'rgba(255,255,255,0.12)',
+  borderStrong: 'rgba(255,255,255,0.20)',
+  text1: '#F4F7FC',
+  text2: 'rgba(244,247,252,0.74)',
+  text3: 'rgba(244,247,252,0.50)',
   /** Frame corners while searching — deliberately colourless. */
-  idle: 'rgba(244,246,248,0.85)',
+  idle: 'rgba(244,247,252,0.85)',
+  /** Brand green — the scan-corner green of the logo. Primary action + "locked". */
+  brand: '#5FE36A',
+  /** Text on brand green. */
+  onBrand: '#041A4E',
 } as const;
 
 /** Risk scale 0–4. Index = level. Green → red, tuned for dark backgrounds. */
 export const risk = ['#34C77B', '#A3D14B', '#F2C230', '#F28A2E', '#EF4A52'] as const;
 export type RiskLevel = 0 | 1 | 2 | 3 | 4;
 
-/** Colour used when the scanner is locked on steady text. */
-export const locked = risk[0];
+/** Colour used when the scanner is locked on steady text — the logo's scan-corner green. */
+export const locked = color.brand;
 
 export const font = {
   regular: 'Heebo_400Regular',

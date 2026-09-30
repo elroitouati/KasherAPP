@@ -21,7 +21,7 @@ export function Button({ label, onPress, kind = 'primary' }: Props) {
         pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
       ]}
     >
-      <Txt style={[styles.label, { color: primary ? color.bg : color.text1 }]}>{label}</Txt>
+      <Txt style={[styles.label, { color: primary ? color.onBrand : color.text1 }]}>{label}</Txt>
     </Pressable>
   );
 }
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: { backgroundColor: color.text1 },
+  primary: { backgroundColor: color.brand },
   secondary: { backgroundColor: color.surface2, borderWidth: 1, borderColor: color.border },
   label: { fontFamily: font.bold, fontSize: size.body, lineHeight: 20 },
 });

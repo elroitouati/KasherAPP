@@ -1,20 +1,68 @@
-import Svg, { Path } from 'react-native-svg';
+/**
+ * One icon family: 24-grid, 1.8 stroke, round caps/joins.
+ * Direction-aware icons (back) are drawn for RTL: "back" points right.
+ */
+import Svg, { Circle, Path } from 'react-native-svg';
+
+import { color as tokens } from '../theme/tokens';
 
 type P = { size?: number; color: string };
 
-/** Flashlight — torch toggle. `on` fills the beam. */
+const stroke = { strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+
+/** Flashlight — torch toggle. `on` fills the body. */
 export function TorchIcon({ size = 24, color, on }: P & { on?: boolean }) {
+  const cut = on ? tokens.text1 : color;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M7 2h10v4l-3 4v11a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V10L7 6V2Z"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-        fill={on ? color : 'none'}
-      />
-      <Path d="M7 6h10" stroke={on ? '#0B0D12' : color} strokeWidth={1.8} />
-      <Path d="M12 13v3" stroke={on ? '#0B0D12' : color} strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M7 2h10v4l-3 4v11a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V10L7 6V2Z" stroke={color} {...stroke} fill={on ? color : 'none'} />
+      <Path d="M7 6h10" stroke={cut} {...stroke} />
+      <Path d="M12 13v3" stroke={cut} {...stroke} />
+    </Svg>
+  );
+}
+
+/** Scan corners with a reading line — the logo's motif. */
+export function ScanIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" stroke={color} {...stroke} strokeWidth={2.2} />
+      <Path d="M7 12h10" stroke={color} {...stroke} strokeWidth={2.2} />
+    </Svg>
+  );
+}
+
+/** Back — points right in RTL. */
+export function BackIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 5l7 7-7 7" stroke={color} {...stroke} strokeWidth={2.2} />
+    </Svg>
+  );
+}
+
+export function InfoIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={color} {...stroke} />
+      <Path d="M12 11v6" stroke={color} {...stroke} />
+      <Circle cx={12} cy={7.6} r={1.1} fill={color} />
+    </Svg>
+  );
+}
+
+export function CheckIcon({ size = 20, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 12.5l4.5 4.5L19 7.5" stroke={color} {...stroke} strokeWidth={2.4} />
+    </Svg>
+  );
+}
+
+export function CrossIcon({ size = 20, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M7 7l10 10M17 7L7 17" stroke={color} {...stroke} strokeWidth={2.2} />
     </Svg>
   );
 }
