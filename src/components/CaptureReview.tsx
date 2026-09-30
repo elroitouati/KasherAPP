@@ -49,7 +49,7 @@ export function CaptureReview({ photo, onDone, onHome }: Props) {
         <Image source={{ uri: photo.uri }} style={styles.photo} resizeMode="cover" accessibilityLabel="התמונה שצולמה" />
       </ScrollView>
       <View style={styles.actions}>
-        <Button label="סרוק מוצר הבא" onPress={onDone} />
+        <Button label="חזרה לסריקה" onPress={onDone} />
         <Button label="חזרה למסך הבית" kind="secondary" onPress={onHome} />
       </View>
     </View>

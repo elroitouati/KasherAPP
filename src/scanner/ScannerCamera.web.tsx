@@ -17,7 +17,11 @@ const SAMPLES: Record<string, string> = {
   pork: 'INGREDIENTI: mozzarella (latte, sale, caglio), prosciutto cotto (carne di suino, sale, destrosio), funghi porcini, olive.',
   cut: 'INGREDIENTI: farina di grano tenero, zucchero, olio di girasole, sciroppo di glu',
 };
-const SAMPLE = SAMPLES[params?.get('demo') ?? '1'] ?? SAMPLES['1'];
+const demoKey = params?.get('demo') ?? '1';
+/** `?demo=cycle` alternates two products every 5s to preview continuous scanning. */
+const CYCLE = demoKey === 'cycle';
+const SAMPLE = SAMPLES[demoKey] ?? SAMPLES['1'];
+const currentSample = () => (CYCLE ? (Math.floor(Date.now() / 5000) % 2 ? SAMPLES.pork : SAMPLES['1']) : SAMPLE);
 
 export const hasLiveOcr = demo;
 
@@ -28,13 +32,13 @@ export const ScannerCamera = forwardRef<ScannerCameraHandle, ScannerCameraProps>
   useImperativeHandle(ref, () => ({
     async capture() {
       const photo = await inner.current!.capture();
-      return demo ? { ...photo, text: SAMPLE } : photo;
+      return demo ? { ...photo, text: currentSample() } : photo;
     },
   }));
 
   useEffect(() => {
     if (!demo || !active) return;
-    const id = setInterval(() => onReading?.({ text: SAMPLE, lineHeightRatio: 0.03 }), 300);
+    const id = setInterval(() => onReading?.({ text: currentSample(), lineHeightRatio: 0.03 }), 300);
     return () => clearInterval(id);
   }, [onReading, active]);
 

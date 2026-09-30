@@ -6,13 +6,17 @@ import { color, radius, size, space } from '../theme/tokens';
 import { HighlightedText } from './HighlightedText';
 import { RiskBadge } from './RiskBadge';
 
-type Props = { text: string };
+type Props = {
+  text: string;
+  /** Badge only — used while a result card is also on screen. */
+  compact?: boolean;
+};
 
 /**
  * Live risk tag under the scan window: the dictionary verdict for what the
  * camera sees right now, plus the ingredient text with flagged words coloured.
  */
-export function LiveVerdict({ text }: Props) {
+export function LiveVerdict({ text, compact }: Props) {
   const flat = useMemo(() => text.replace(/\n/g, ' '), [text]); // same length → offsets stay valid
   const result = useMemo(() => analyzeLabel(flat), [flat]);
 
@@ -29,7 +33,7 @@ export function LiveVerdict({ text }: Props) {
   return (
     <View style={styles.panel}>
       <RiskBadge level={result.level} detail={detail} compact />
-      <HighlightedText text={snippet} findings={marks} numberOfLines={3} style={styles.text} />
+      {!compact && <HighlightedText text={snippet} findings={marks} numberOfLines={3} style={styles.text} />}
     </View>
   );
 }

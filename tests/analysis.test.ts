@@ -98,3 +98,20 @@ describe('pickBestReading (rotated photos)', () => {
     expect(best?.orientation).toBe('landscapeRight');
   });
 });
+
+describe('continuous scanning helpers', () => {
+  it('remembers the last text read even after the label leaves the frame', () => {
+    const t = new StabilityTracker();
+    t.push({ text: LABEL, at: 0, lineHeightRatio: 0.03 });
+    t.push({ text: '', at: 300, lineHeightRatio: null });
+    expect(t.lastText).toBe(LABEL);
+    t.reset();
+    expect(t.lastText).toBe('');
+  });
+
+  it('a different product reads as a different label', () => {
+    const other = 'INGREDIENTI: pomodoro, olio extra vergine di oliva, basilico, sale, zucchero';
+    expect(textSimilarity(LABEL, other)).toBeLessThan(0.5);
+    expect(textSimilarity(LABEL, LABEL.replace('burro', 'burr0'))).toBeGreaterThanOrEqual(0.5);
+  });
+});

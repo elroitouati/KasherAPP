@@ -46,7 +46,8 @@ export type Guidance =
   | 'steady' // text is changing between frames
   | 'find-ingredients' // steady text, but no ingredient header
   | 'focusing' // steady on an ingredient list, counting down to capture
-  | 'ready'; // stable long enough → capture
+  | 'ready' // stable long enough → capture
+  | 'shown'; // still on the label already shown in the result card
 
 export const GUIDANCE_TEXT: Record<Guidance, string> = {
   point: 'כוון את המצלמה לרשימת הרכיבים',
@@ -55,6 +56,7 @@ export const GUIDANCE_TEXT: Record<Guidance, string> = {
   'find-ingredients': 'לא רואה רשימת רכיבים — הזז את המצלמה',
   focusing: 'מתמקד…',
   ready: 'מצלם…',
+  shown: 'התוצאה למטה — עבור למוצר הבא',
 };
 
 export type FrameReading = {
@@ -110,6 +112,8 @@ const IDLE: ScanState = {
  */
 export class StabilityTracker {
   private prev: string | null = null;
+  /** Last non-empty text read — used when the full photo reads worse than the stream. */
+  lastText = '';
   private steadySince: number | null = null;
   private opts: StabilityOptions;
 
@@ -120,15 +124,18 @@ export class StabilityTracker {
   reset(): void {
     this.prev = null;
     this.steadySince = null;
+    this.lastText = '';
   }
 
   push(r: FrameReading): ScanState {
     const text = normalizeOcr(r.text);
+    if (text) this.lastText = text;
     const letters = letterCount(text);
     const hasIngredients = hasIngredientsHeader(text);
 
     if (letters < 4) {
-      this.reset();
+      this.prev = null;
+      this.steadySince = null;
       return { ...IDLE, text };
     }
 

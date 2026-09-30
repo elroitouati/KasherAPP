@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { lookupProduct, type Lookup } from '../data/store';
-import { analyzeProduct } from '../kashrut/product';
+import type { Lookup } from '../data/store';
+import { useProduct } from '../data/useProduct';
 import { color, font, radius, size, space } from '../theme/tokens';
 import { Button } from './Button';
 import { ResultView } from './ResultView';
@@ -25,18 +24,8 @@ const SOURCE: Record<NonNullable<Lookup['source']>, string> = {
 /** Product found by barcode → verdict from the open database. */
 export function ProductResult({ code, onNext, onScanLabel, onHome }: Props) {
   const insets = useSafeAreaInsets();
-  const [lookup, setLookup] = useState<Lookup | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    lookupProduct(code).then((l) => alive && setLookup(l));
-    return () => {
-      alive = false;
-    };
-  }, [code]);
-
+  const { lookup, verdict } = useProduct(code);
   const p = lookup?.product ?? null;
-  const verdict = p ? analyzeProduct(p) : null;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + space[4], paddingBottom: insets.bottom + space[4] }]}>
@@ -99,7 +88,7 @@ export function ProductResult({ code, onNext, onScanLabel, onHome }: Props) {
       </ScrollView>
 
       <View style={styles.actions}>
-        <Button label="סרוק ברקוד נוסף" onPress={onNext} />
+        <Button label="חזרה לסריקה" onPress={onNext} />
         <View style={styles.row}>
           <View style={styles.flex}>
             <Button label="צלם את התווית" kind="secondary" onPress={onScanLabel} />
