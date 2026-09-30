@@ -11,6 +11,8 @@ export const color = {
   surface1: 'rgba(255,255,255,0.06)',
   surface2: 'rgba(255,255,255,0.10)',
   surfaceScrim: 'rgba(4,26,78,0.78)',
+  /** Raised sheets and dialogs — one step lighter than bg. */
+  sheet: '#0A2461',
   border: 'rgba(255,255,255,0.12)',
   borderStrong: 'rgba(255,255,255,0.20)',
   text1: '#F4F7FC',

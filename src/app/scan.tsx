@@ -1,21 +1,26 @@
 import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { router } from 'expo-router';
+import { AppState, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CaptureButton } from '../components/CaptureButton';
 import { CaptureReview } from '../components/CaptureReview';
 import { IconButton } from '../components/IconButton';
-import { LiveVerdict } from '../components/LiveVerdict';
 import { BackIcon, TorchIcon } from '../components/icons';
+import { LiveVerdict } from '../components/LiveVerdict';
 import { PermissionGate } from '../components/PermissionGate';
+import { ProductResult } from '../components/ProductResult';
 import { ScanFrame, type FrameRect } from '../components/ScanFrame';
 import { Txt } from '../components/Txt';
 import { GUIDANCE_TEXT, StabilityTracker, type ScanState } from '../scanner/analysis';
+import { isValidBarcode, normalizeBarcode } from '../data/barcode';
+import { BarcodeCamera } from '../scanner/BarcodeCamera';
 import { hasLiveOcr, ScannerCamera } from '../scanner/ScannerCamera';
 import type { CapturedPhoto, LiveReading, ScannerCameraHandle } from '../scanner/types';
 import { color, font, radius, risk, size, space } from '../theme/tokens';
+
+type Mode = 'label' | 'barcode';
 
 const IDLE_SCAN: ScanState = { guidance: 'point', progress: 0, locked: false, hasIngredients: false, text: '' };
 const TOP_BAR = 56;
@@ -31,15 +36,22 @@ export default function ScanScreen() {
 function Scanner() {
   const insets = useSafeAreaInsets();
   const { width: W, height: H } = useWindowDimensions();
+  const params = useLocalSearchParams<{ mode?: string; code?: string }>();
 
   const camera = useRef<ScannerCameraHandle>(null);
   const [tracker] = useState(() => new StabilityTracker());
   const capturing = useRef(false);
 
+  const [mode, setMode] = useState<Mode>(params.mode === 'barcode' || params.code ? 'barcode' : 'label');
   const [scan, setScan] = useState<ScanState>(IDLE_SCAN);
   const [torch, setTorch] = useState(false);
   const [busy, setBusy] = useState(false);
   const [captured, setCaptured] = useState<CapturedPhoto | null>(null);
+  // A link like kashercheck://scan?code=8000500310427 opens a product directly.
+  const [productCode, setProductCode] = useState<string | null>(
+    params.code && isValidBarcode(params.code) ? normalizeBarcode(params.code) : null,
+  );
+  const [barcodeReset, setBarcodeReset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [foreground, setForeground] = useState(true);
 
@@ -47,6 +59,17 @@ function Scanner() {
     const sub = AppState.addEventListener('change', (s) => setForeground(s === 'active'));
     return () => sub.remove();
   }, []);
+
+  const goHome = useCallback(() => (router.canGoBack() ? router.back() : router.replace('/')), []);
+
+  const switchMode = (m: Mode) => {
+    if (m === mode) return;
+    Haptics.selectionAsync().catch(() => {});
+    tracker.reset();
+    setScan(IDLE_SCAN);
+    setError(null);
+    setMode(m);
+  };
 
   const capture = useCallback(
     async (auto: boolean) => {
@@ -82,11 +105,14 @@ function Scanner() {
     [tracker, capture],
   );
 
-  const goHome = useCallback(() => (router.canGoBack() ? router.back() : router.replace('/')), []);
+  const onCode = useCallback((code: string) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    setProductCode(code);
+  }, []);
 
-  // Scan window: full width minus gutters, a little taller than wide.
+  // Label: tall window for an ingredient list. Barcode: wide, short window.
   const frameW = W - space[6] * 2;
-  const frameH = Math.min(frameW * 1.1, H * 0.46);
+  const frameH = mode === 'label' ? Math.min(frameW * 1.1, H * 0.46) : frameW * 0.55;
   const rect: FrameRect = {
     x: (W - frameW) / 2,
     y: insets.top + TOP_BAR + space[12] + space[4],
@@ -94,20 +120,38 @@ function Scanner() {
     height: frameH,
   };
 
-  const guidance = !hasLiveOcr ? 'צלם את רשימת הרכיבים' : GUIDANCE_TEXT[scan.guidance];
-  const showLiveText = hasLiveOcr && scan.text.length > 0;
+  const overlayOpen = captured != null || productCode != null;
+  const cameraActive = foreground && !overlayOpen;
+
+  const guidance =
+    mode === 'barcode'
+      ? 'כוון את הברקוד לתוך המסגרת'
+      : !hasLiveOcr
+        ? 'צלם את רשימת הרכיבים'
+        : GUIDANCE_TEXT[scan.guidance];
+  const showLiveText = mode === 'label' && hasLiveOcr && scan.text.length > 0;
 
   return (
     <View style={styles.screen}>
-      <ScannerCamera
-        ref={camera}
-        active={foreground && captured == null}
-        torch={torch}
-        onReading={onReading}
-        onError={() => setError('המצלמה לא זמינה כרגע. סגור אפליקציות אחרות שמשתמשות בה ונסה שוב.')}
-      />
+      {mode === 'label' ? (
+        <ScannerCamera
+          ref={camera}
+          active={cameraActive}
+          torch={torch}
+          onReading={onReading}
+          onError={() => setError('המצלמה לא זמינה כרגע. סגור אפליקציות אחרות שמשתמשות בה ונסה שוב.')}
+        />
+      ) : (
+        <BarcodeCamera
+          active={cameraActive}
+          torch={torch}
+          onCode={onCode}
+          resetKey={barcodeReset}
+          onError={() => setError('המצלמה לא זמינה כרגע. נסה שוב.')}
+        />
+      )}
 
-      <ScanFrame rect={rect} isLocked={scan.locked} />
+      <ScanFrame rect={rect} isLocked={mode === 'label' && scan.locked} />
 
       {/* Top bar: back + title at the start (right), torch at the end (left). */}
       <View style={[styles.topBar, { top: insets.top }]}>
@@ -116,8 +160,8 @@ function Scanner() {
             <BackIcon color={color.text1} />
           </IconButton>
           <View>
-            <Txt variant="title">סריקת תווית</Txt>
-            {!hasLiveOcr && <Txt variant="label">Expo Go · סריקה חיה כבויה</Txt>}
+            <Txt variant="title">{mode === 'label' ? 'סריקת תווית' : 'סריקת ברקוד'}</Txt>
+            {mode === 'label' && !hasLiveOcr && <Txt variant="label">Expo Go · סריקה חיה כבויה</Txt>}
           </View>
         </View>
         <IconButton label={torch ? 'כבה פנס' : 'הדלק פנס'} selected={torch} onPress={() => setTorch((t) => !t)}>
@@ -139,11 +183,66 @@ function Scanner() {
         </View>
       )}
 
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + space[6] }]}>
-        <CaptureButton progress={scan.progress} busy={busy} onPress={() => capture(false)} />
+      {mode === 'barcode' && (
+        <View style={[styles.livePanel, { top: rect.y + rect.height + space[4] }]} pointerEvents="none">
+          <Txt variant="caption" style={styles.hint}>
+            נחפש את המוצר במאגר הפתוח ונבדוק את רשימת הרכיבים שלו. בלי אינטרנט — נחפש במוצרים שהורדו.
+          </Txt>
+        </View>
+      )}
+
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + space[4] }]}>
+        {mode === 'label' ? (
+          <CaptureButton progress={scan.progress} busy={busy} onPress={() => capture(false)} />
+        ) : (
+          <View style={styles.shutterSpacer} />
+        )}
+        <ModeSwitch mode={mode} onChange={switchMode} />
       </View>
 
       {captured && <CaptureReview photo={captured} onDone={() => setCaptured(null)} onHome={goHome} />}
+      {productCode && (
+        <ProductResult
+          key={productCode}
+          code={productCode}
+          onNext={() => {
+            setProductCode(null);
+            setBarcodeReset((n) => n + 1);
+          }}
+          onScanLabel={() => {
+            setProductCode(null);
+            setBarcodeReset((n) => n + 1);
+            switchMode('label');
+          }}
+          onHome={goHome}
+        />
+      )}
+    </View>
+  );
+}
+
+/** Segmented control: ingredient list ↔ barcode. */
+function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
+  const opts: { id: Mode; label: string }[] = [
+    { id: 'label', label: 'רשימת רכיבים' },
+    { id: 'barcode', label: 'ברקוד' },
+  ];
+  return (
+    <View style={styles.switch} accessibilityRole="tablist">
+      {opts.map((o) => {
+        const on = o.id === mode;
+        return (
+          <Pressable
+            key={o.id}
+            onPress={() => onChange(o.id)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            style={[styles.switchOpt, on && styles.switchOn]}
+          >
+            <Txt style={[styles.switchText, on && styles.switchTextOn]}>{o.label}</Txt>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -173,5 +272,25 @@ const styles = StyleSheet.create({
   pillError: { borderColor: risk[4] },
   pillText: { fontFamily: font.bold, fontSize: size.body, lineHeight: 22, textAlign: 'center' },
   livePanel: { position: 'absolute', start: space[6], end: space[6] },
-  bottomBar: { position: 'absolute', start: 0, end: 0, bottom: 0, alignItems: 'center' },
+  hint: {
+    textAlign: 'center',
+    backgroundColor: color.surfaceScrim,
+    borderRadius: radius.md,
+    padding: space[3],
+    overflow: 'hidden',
+  },
+  bottomBar: { position: 'absolute', start: 0, end: 0, bottom: 0, alignItems: 'center', gap: space[4] },
+  shutterSpacer: { height: 80 },
+  switch: {
+    flexDirection: 'row',
+    backgroundColor: color.surfaceScrim,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: color.border,
+    padding: 4,
+  },
+  switchOpt: { minHeight: 44, paddingHorizontal: space[5], borderRadius: radius.pill, justifyContent: 'center' },
+  switchOn: { backgroundColor: color.text1 },
+  switchText: { fontFamily: font.bold, fontSize: size.sm, lineHeight: 20, color: color.text2 },
+  switchTextOn: { color: color.bg },
 });

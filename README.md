@@ -30,7 +30,11 @@ src/kashrut/           הסטנדרט: מילון, נרמול ומנוע סרי�
   dict.ts              ~900 מונחים ב-6 שפות, מסייגים וביטויים בטוחים
   engine.ts            scanIngredients / analyzeLabel — רמה, ממצאים, עקבות, בשר+חלב
   normalize.ts         נרמול טקסט עם מיפוי חזרה למילה המקורית בתווית
-src/scanner/           מצלמה, OCR חי, זיהוי יציבות ורשימת רכיבים
+src/kashrut/explain.ts הסבר לכל ממצא (מה זה, למה הרמה, מה עושים)
+src/kashrut/product.ts בדיקת מוצר מהמאגר (כל השפות, או תגיות במצב אופליין)
+src/data/              Open Food Facts, מטמון מוצרים, חבילות אופליין לפי מדינה, הגדרות
+src/abroad/            מצב חו"ל: מילים, מנות וטיפים ל-6 מדינות
+src/scanner/           מצלמה, OCR חי, ברקוד, זיהוי יציבות ורשימת רכיבים
   analysis.ts          לוגיקה טהורה: יציבות, הכוונה, בחירת הסיבוב הטוב ביותר
   LiveCamera.tsx       VisionCamera v5 + ML Kit (development build)
   ExpoGoCamera.tsx     expo-camera (Expo Go)

@@ -66,3 +66,22 @@ export function CrossIcon({ size = 20, color }: P) {
     </Svg>
   );
 }
+
+/** Barcode — vertical bars inside scan corners. */
+export function BarcodeIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke={color} {...stroke} />
+      <Path d="M7 8v8M10 8v8M13 8v8M17 8v8" stroke={color} {...stroke} />
+    </Svg>
+  );
+}
+
+export function GlobeIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={color} {...stroke} />
+      <Path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" stroke={color} {...stroke} />
+    </Svg>
+  );
+}

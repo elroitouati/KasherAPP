@@ -4,9 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { IconButton } from '../components/IconButton';
-import { InfoIcon, ScanIcon } from '../components/icons';
+import { BarcodeIcon, GlobeIcon, InfoIcon, ScanIcon } from '../components/icons';
 import { RiskScale } from '../components/RiskScale';
 import { Txt } from '../components/Txt';
+import { getCountry } from '../abroad/countries';
+import { useSettings } from '../data/settings';
 import { color, font, radius, size, space } from '../theme/tokens';
 
 const LOGO = require('../../assets/brand/logo-256.png');
@@ -14,6 +16,7 @@ const LOGO = require('../../assets/brand/logo-256.png');
 /** Home: who we are, how to read a result, one big action — scan. */
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const country = getCountry(useSettings().country);
 
   return (
     <View style={styles.screen}>
@@ -48,6 +51,21 @@ export default function HomeScreen() {
             מכוונים את המצלמה לרשימת הרכיבים, ואנחנו מסמנים חזיר, פירות ים, דגים בלי קשקשים, חרקים ושאר רכיבים מבעלי חיים
             לא כשרים — ישר מהאריזה, גם בשפה זרה.
           </Txt>
+        </View>
+
+        <View style={styles.tiles}>
+          <Tile
+            icon={<BarcodeIcon color={color.brand} size={26} />}
+            title="סריקת ברקוד"
+            sub="לפי מאגר מוצרים"
+            onPress={() => router.push('/scan?mode=barcode')}
+          />
+          <Tile
+            icon={<GlobeIcon color={color.brand} size={26} />}
+            title={'מצב חו"ל'}
+            sub={country ? `${country.name} · מילים ומנות` : 'בחר מדינה'}
+            onPress={() => router.push('/abroad')}
+          />
         </View>
 
         <View style={styles.card}>
@@ -89,6 +107,23 @@ export default function HomeScreen() {
         </View>
       </View>
     </View>
+  );
+}
+
+function Tile({ icon, title, sub, onPress }: { icon: React.ReactNode; title: string; sub: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${sub}`}
+      style={({ pressed }) => [styles.tile, pressed && { backgroundColor: color.surface2 }]}
+    >
+      {icon}
+      <Txt style={styles.tileTitle}>{title}</Txt>
+      <Txt variant="caption" numberOfLines={1}>
+        {sub}
+      </Txt>
+    </Pressable>
   );
 }
 
@@ -147,6 +182,18 @@ const styles = StyleSheet.create({
     padding: space[4],
     gap: space[3],
   },
+  tiles: { flexDirection: 'row', gap: space[3] },
+  tile: {
+    flex: 1,
+    minHeight: 112,
+    padding: space[4],
+    gap: space[1],
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface1,
+  },
+  tileTitle: { fontFamily: font.bold, fontSize: size.body, lineHeight: 22, marginTop: space[2] },
   tip: { flexDirection: 'row', gap: space[3], alignItems: 'flex-start', paddingHorizontal: space[1] },
   tipText: { flex: 1 },
   footer: { paddingHorizontal: space[5], paddingTop: space[3], gap: space[3], alignItems: 'stretch' },

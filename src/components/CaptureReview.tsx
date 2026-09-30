@@ -1,19 +1,18 @@
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { analyzeLabel, summarize } from '../kashrut/engine';
+import { analyzeLabel } from '../kashrut/engine';
 import type { CapturedPhoto } from '../scanner/types';
 import { color, radius, space } from '../theme/tokens';
 import { Button } from './Button';
-import { HighlightedText } from './HighlightedText';
-import { RiskBadge } from './RiskBadge';
+import { ResultView } from './ResultView';
 import { Txt } from './Txt';
 
 type Props = { photo: CapturedPhoto; onDone: () => void; onHome: () => void };
 
 /**
- * Step-1 stand-in for the result screen: shows the full-resolution photo and
- * the text ML Kit read from it. Replaced by the gauge screen in step 3.
+ * Result for a photographed label (dictionary verdict). The gauge screen
+ * (step 3) will replace the badge at the top.
  */
 export function CaptureReview({ photo, onDone, onHome }: Props) {
   const insets = useSafeAreaInsets();
@@ -24,43 +23,30 @@ export function CaptureReview({ photo, onDone, onHome }: Props) {
     <View style={[styles.screen, { paddingTop: insets.top + space[4], paddingBottom: insets.bottom + space[4] }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Txt variant="title">התווית צולמה</Txt>
-        {result && (
+
+        {result ? (
+          <ResultView
+            level={result.level}
+            status={result.status}
+            findings={result.findings}
+            traces={result.traces}
+            notes={result.notes}
+            source="נבדק במילון בלבד"
+            text={photo.text}
+            textFindings={[...result.findings, ...result.traces]}
+            textTitle="טקסט שנקרא מהתמונה"
+          />
+        ) : (
           <View style={styles.card}>
-            <RiskBadge level={result.level} detail={summarize(result)} />
-            {result.findings.map((f, i) => (
-              <Txt key={i} variant="caption">
-                {f.reason} — <Txt latin variant="caption" style={{ color: color.text1 }}>{f.term}</Txt>
-              </Txt>
-            ))}
-            {result.traces.length > 0 && (
-              <Txt variant="caption" style={{ color: color.text3 }}>
-                עקבות (לא נספרים): {result.traces.map((t) => t.term).join(', ')}
-              </Txt>
-            )}
-            {result.notes.map((n) => (
-              <Txt key={n} variant="caption">
-                {n}
-              </Txt>
-            ))}
-            <Txt variant="caption" style={{ color: color.text3 }}>
-              נבדק במילון בלבד · בדיקה לפי מקור מן החי, לא תחליף להכשר
+            <Txt style={styles.muted}>
+              {photo.text == null
+                ? 'ב-Expo Go אין זיהוי טקסט על המכשיר. בגרסה המותקנת הטקסט נקרא כאן.'
+                : 'לא נקרא טקסט. קרב את הטלפון לרשימת הרכיבים וצלם שוב.'}
             </Txt>
           </View>
         )}
-        <Image source={{ uri: photo.uri }} style={styles.photo} resizeMode="cover" accessibilityIgnoresInvertColors />
 
-        <View style={styles.card}>
-          <Txt variant="label">טקסט שנקרא מהתמונה המלאה</Txt>
-          {photo.text == null ? (
-            <Txt style={styles.muted}>
-              ב-Expo Go אין זיהוי טקסט על המכשיר. בגרסת הפיתוח הטקסט נקרא כאן, ובשלב 4 התמונה תיבדק גם ע״י Claude.
-            </Txt>
-          ) : empty ? (
-            <Txt style={styles.muted}>לא נקרא טקסט. קרב את הטלפון לרשימת הרכיבים וצלם שוב.</Txt>
-          ) : (
-            <HighlightedText text={photo.text} findings={[...(result?.findings ?? []), ...(result?.traces ?? [])]} style={styles.ocr} />
-          )}
-        </View>
+        <Image source={{ uri: photo.uri }} style={styles.photo} resizeMode="cover" accessibilityLabel="התמונה שצולמה" />
       </ScrollView>
       <View style={styles.actions}>
         <Button label="סרוק מוצר הבא" onPress={onDone} />
@@ -80,9 +66,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.lg,
     padding: space[4],
-    gap: space[2],
   },
   muted: { color: color.text2 },
-  ocr: { fontSize: 15, lineHeight: 22 },
   actions: { paddingHorizontal: space[5], paddingTop: space[3], gap: space[2] },
 });
